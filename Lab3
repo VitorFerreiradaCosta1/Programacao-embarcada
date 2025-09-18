@@ -1,0 +1,58 @@
+//led.h
+#ifndef LED_H
+#define LED_H
+
+void ConfigurarLed(void);
+void LigarLed(unsigned char num);
+void DesligarLed(unsigned char num);
+
+#endif 
+
+//led.c
+
+#include "config.h"
+#include "led.h"
+#define TRISD (*(volatile __near unsigned char*) 0xF95)
+#define PORTD (*(volatile __near unsigned char*) 0xF83)
+
+void ConfigurarLed(void) {
+    TRISD = 0x00;
+    PORTD = 0xFF;
+}
+
+void LigarLed(unsigned char num) {
+    if (num < 8){
+        PORTD &= ~(1<<num);
+    }
+}
+
+void DesligarLed(unsigned char num){
+    if (num < 8) {
+        PORTD |= 1<<num;
+    }
+}
+
+//main.c
+
+#include "config.h"
+#include "led.h"
+
+void Delay(void){
+    for (int i = 0; i < 10000; i++);
+}
+
+void main(void) {
+    unsigned char i;
+    ConfigurarLed();
+    while (1) {
+        for (i = 0; i < 8; i++) {
+            LigarLed(i);
+            Delay();
+        }
+        for (i = 0; i < 8; i++){
+            DesligarLed(i);
+            Delay();
+        }
+    }
+}
+
