@@ -1,0 +1,30 @@
+#include "pic18f4520.h"
+#include "config.h"
+
+void main(void) {
+
+    TRISA = 0x00; //configura porta A como saída
+    TRISD = 0x00; //configura porta D como saída
+    TRISE = 0x00; //configura porta E como saída
+
+    BitClr(INTCON2, 7); //liga pull up
+    ADCON1 = 0x0E; //config AD
+
+    TRISB = 0xFE; //config porta para ler teclas A e B
+    PORTB = 0x00; //config porta para ler teclas A e B
+
+    BitSet(PORTA, 5); //ativa o 1o display
+    BitSet(PORTA, 2); //ativa o 2o display
+    BitSet(PORTE, 0); //ativa o 3o display
+    BitSet(PORTE, 2); //ativa o 4o display
+
+    while (1) {
+        if (BitTst(PORTB, 4)==0) {
+            PORTD = 0x77;
+        } else if (BitTst(PORTB, 5)==0) {
+            PORTD = 0x6F;
+        } else {
+            PORTD = 0x00;
+        }
+    }
+}
