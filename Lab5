@@ -1,0 +1,46 @@
+#include "pic18f4520.h"
+#include "config.h"
+#include "ssd.h"
+
+void main(void) {
+    float tempo;
+    int min1 = 9;
+    int min2 = 9;
+    
+    unsigned int contseg = 5000;
+
+    ssdInit();
+    for (;;) {
+        contseg++;
+
+        ssdDigit(((contseg / 100) % 10), 0);
+        for (tempo = 0; tempo < 15; tempo++);
+        ssdUpdate();
+
+        if (((contseg / 1000) % 10) < 6) {
+            ssdDigit(((contseg / 1000) % 10), 1);
+            for (tempo = 0; tempo < 15; tempo++);
+            ssdUpdate();
+        }
+        else {
+            min1++;
+            contseg = 0;
+        }
+        
+        if (min1 > 9){
+            min2++;
+            min1 = 0;
+        }
+        ssdDigit(min1, 2);
+        for (tempo = 0; tempo < 15; tempo++);
+        ssdUpdate();
+        
+        if (min2 > 9){
+            min2 = 0;
+        } 
+        ssdDigit(min2, 3);
+        for (tempo = 0; tempo < 15; tempo++);
+        ssdUpdate();
+    }
+
+}
