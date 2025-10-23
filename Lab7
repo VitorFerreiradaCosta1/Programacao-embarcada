@@ -1,0 +1,54 @@
+#include "config.h"
+#include "lcd.h"
+#include "rtc.h"
+#include "serial.h"
+
+void main(void) {
+    int i = 0;
+    int j[8];
+    unsigned char dadoSerial;
+    //Inicializacoes
+    lcdInit();
+    serialInit();
+    rtcInit();
+
+    for (;;) {
+        dadoSerial = serialRead();
+        if (dadoSerial != 0) { //Se dado e valido
+            j[i] = dadoSerial;
+            i++;
+            if (i == 7) {
+                switch (j[0]) {
+                    case 'D':
+                        rtcPutDate(j[1] * 10 + j[2]);
+                        rtcPutMonth(j[2] * 10 + j[4]);
+                        rtcPutYear(j[5] * 10 + j[6]);
+
+                        lcdCommand(0x80);
+                        lcdData(rtcGetDate());
+                        lcdData('/');
+                        lcdData(rtcGetMonth());
+                        lcdData('/');
+                        lcdData(rtcGetYear());
+                        break;
+                    case 'H':
+                        rtcPutHours(j[1] * 10 + j[2]);
+                        rtcPutMinutes(j[2] * 10 + j[4]);
+                        rtcPutSeconds(j[5] * 10 + j[6]);
+                        
+                        lcdCommand(0x80);
+                        lcdData(((rtcGetHours() / 10) % 10) + 48);
+                        lcdData((rtcGetHours() % 10) + 48);
+                        lcdData(':');
+                        lcdData(((rtcGetMinutes() / 10) % 10) + 48);
+                        lcdData((rtcGetMinutes() % 10) + 48);
+                        lcdData(':');
+                        lcdData(((rtcGetSeconds() / 10) % 10) + 48);
+                        lcdData((rtcGetSeconds() % 10) + 48);
+
+                }
+            }
+        }
+
+    }
+}
