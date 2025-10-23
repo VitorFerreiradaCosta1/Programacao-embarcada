@@ -20,35 +20,38 @@ void main(void) {
             if (i == 7) {
                 switch (j[0]) {
                     case 'D':
-                        rtcPutDate(j[1] * 10 + j[2]);
-                        rtcPutMonth(j[2] * 10 + j[4]);
-                        rtcPutYear(j[5] * 10 + j[6]);
 
-                        lcdCommand(0x80);
-                        lcdData(rtcGetDate());
-                        lcdData('/');
-                        lcdData(rtcGetMonth());
-                        lcdData('/');
-                        lcdData(rtcGetYear());
+                        rtcPutDate((j[1] - 48) * 10 + j[2] - 48);
+                        rtcPutMonth((j[2] - 48) * 10 + j[4] - 48);
+                        rtcPutYear((j[5] - 48) * 10 + j[6] - 48);
+
                         break;
                     case 'H':
                         rtcPutHours(j[1] * 10 + j[2]);
                         rtcPutMinutes(j[2] * 10 + j[4]);
                         rtcPutSeconds(j[5] * 10 + j[6]);
-                        
-                        lcdCommand(0x80);
-                        lcdData(((rtcGetHours() / 10) % 10) + 48);
-                        lcdData((rtcGetHours() % 10) + 48);
-                        lcdData(':');
-                        lcdData(((rtcGetMinutes() / 10) % 10) + 48);
-                        lcdData((rtcGetMinutes() % 10) + 48);
-                        lcdData(':');
-                        lcdData(((rtcGetSeconds() / 10) % 10) + 48);
-                        lcdData((rtcGetSeconds() % 10) + 48);
+
+
 
                 }
             }
         }
+        lcdCommand(0x80);
+        lcdData(((rtcGetHours() / 10) % 10) + 48);
+        lcdData((rtcGetHours() % 10) + 48);
+        lcdData(':');
+        lcdData(((rtcGetMinutes() / 10) % 10) + 48);
+        lcdData((rtcGetMinutes() % 10) + 48);
+        lcdData(':');
+        lcdData(((rtcGetSeconds() / 10) % 10) + 48);
+        lcdData((rtcGetSeconds() % 10) + 48);
+
+        lcdCommand(0xC0);
+        lcdData(rtcGetDate());
+        lcdData('/');
+        lcdData(rtcGetMonth());
+        lcdData('/');
+        lcdData(rtcGetYear());
 
     }
 }
