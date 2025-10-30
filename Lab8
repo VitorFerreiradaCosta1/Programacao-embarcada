@@ -1,0 +1,104 @@
+#include "config.h"
+#include "pic18f4520.h"
+#include "adc.h"
+#include "lcd.h"
+#include "serial.h"
+#include "pwm.h"
+#include "keypad.h"
+#include "temperatura.h"
+
+char dig[4];
+
+int LeTemperatura() {
+    return adcRead() / 2;
+}
+
+void PrintInt(int t) {
+ 
+    dig[0] = ((t / 1000) % 10) + 48;
+    dig[1] = ((t / 100) % 10) + 48;
+    dig[2] = ((t / 10) % 10) + 48;
+    dig[3] = (t % 10) + 48;
+  
+    lcdData(dig[0]);
+    lcdData(dig[1]);
+    lcdData(dig[2]);
+    lcdData(dig[3]);
+    
+}
+void main(void) {
+    adcInit();
+    lcdInit();
+    pwmInit();
+    pwmFrequency(1000);
+    serialInit();
+    kpInit();
+
+    for (;;) {
+        lcdCommand(0x80);
+        lcdData('T');
+        PrintInt(LeTemperatura());
+        lcdData('H');
+        PrintInt(75);
+        lcdData('L');
+        PrintInt(10);
+        
+        AtualizarSistema();
+        
+        lcdCommand(0xC0);
+        lcdData('C');
+        lcdData(':');
+        PrintInt(AtualizarSistema());
+        
+        lcdData(' ');
+        lcdData('A');
+        lcdData(':');
+        PrintInt(AtualizarSistema());
+    }
+}
+
+
+#include "temperatura.h"
+#include "pic18f4520.h"
+#include "adc.h"
+#include "pwm.h"
+
+int LeTemperaturas() {
+    return adcRead() / 2;
+}
+int tmax = 75, tmin = 10, t = 0;
+
+void AtualizarSistema(void) {
+    t = LeTemperaturas();
+    if (t > tmax) {
+        pwmSet1(100);
+    } else {
+        pwmSet1(0);
+    }
+    if (t < tmin) {
+        pwmSet2(100);
+    } else {
+        pwmSet2(0);
+    }
+    return;
+}
+
+void ConfiguraLimiteSuperior(unsigned char temp) {
+    tmax = temp;
+}
+
+void ConfiguraLimiteInferior(unsigned char temp) {
+    tmin = temp;
+}
+
+
+
+#ifndef TEMPERATURA_H
+    #define	TEMPERATURA_H
+
+void ConfiguraLimiteSuperior(unsigned char temp);
+void ConfiguraLimiteInferior(unsigned char temp);
+void AtualizarSistema(void);
+
+#endif
+
