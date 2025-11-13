@@ -1,0 +1,27 @@
+#pragma config MCLRE=ON
+#pragma config OSC=INTIO67
+#pragma config WDT=OFF
+#pragma config LVP=OFF
+#pragma config PBADEN=OFF
+#pragma config DEBUG = OFF
+#pragma config WDTPS = 8192
+#define CLRWDT() asm("CLRWDT")
+
+void main(void) {
+    float i;
+    volatile __near unsigned char * OSCCON =
+            (volatile __near unsigned char *) 0xFD3;
+    volatile __near unsigned char * PORTD =
+            (volatile __near unsigned char *) 0xF83;
+    volatile __near unsigned char * TRISD =
+            (volatile __near unsigned char *) 0xF95;
+
+    *TRISD = 0x00;
+    *PORTD = 0x00;
+    *OSCCON = 0x48;
+    for (;;) {
+        for (i = 0; i < 1000; i++);
+        *PORTD = *PORTD + 1;
+        CLRWDT();
+    }
+}
