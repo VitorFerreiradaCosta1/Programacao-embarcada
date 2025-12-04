@@ -1,0 +1,139 @@
+#include "pic18f4520.h"
+#include "config.h"
+#include "keypad.h"
+#include "lcd.h"
+#include "serial.h"
+#include "ssd.h"
+#include "timer.h"
+#include "pwm.h"
+#include "adc.h"
+
+int temp;
+
+unsigned char LeTeclado(void) {
+    int tecla = kpRead();
+    if (BitTst(tecla, 6)) {//1
+        lcdCommand(0x80);
+        lcdData('V');
+        lcdData('i');
+        lcdData('t');
+        lcdData('o');
+        lcdData('r');
+    }
+    if (BitTst(tecla, 4)) {//2
+        lcdCommand(0xC0);
+        lcdData('2');
+        lcdData('0');
+        lcdData('2');
+        lcdData('5');
+        lcdData('0');
+        lcdData('0');
+        lcdData('0');
+        lcdData('3');
+        lcdData('5');
+        lcdData('4');
+
+    }
+    if (BitTst(tecla, 7)) {//4
+        pwmInit();
+        pwmSet1(100);
+        pwmFrequency(1000);
+    }
+    if (BitTst(tecla, 5)) {//5
+        pwmSet1(0);
+    }
+    if (BitTst(tecla, 2)) {//3
+        lcdCommand(0x01);
+    } else {
+        return 0;
+    }
+}
+
+void Serial(void) {
+    int serial = serialRead();
+
+    if (serial == 'T') { //A
+        serialSend('T');
+        serialSend(':');
+        serialSend(((temp / 10) % 10) + 48);
+        serialSend((temp % 10) + 48);
+        serialSend(13);
+    }
+    if (serial == 'A') {
+        lcdCommand(0x80);
+        lcdData('V');
+        lcdData('i');
+        lcdData('t');
+        lcdData('o');
+        lcdData('r');
+    }
+    if (serial == 'B') {
+        lcdCommand(0xC0);
+        lcdData('2');
+        lcdData('0');
+        lcdData('2');
+        lcdData('5');
+        lcdData('0');
+        lcdData('0');
+        lcdData('0');
+        lcdData('3');
+        lcdData('5');
+        lcdData('4');
+    }
+    if (serial == 'C') {
+        pwmInit();
+        pwmSet1(100);
+        pwmFrequency(1000);
+    }
+    if (serial == 'D') {
+        pwmSet1(0);
+    }
+    if (serial == '0') {
+        lcdCommand(0x01);
+    }
+}
+
+void MostraDisplay(void) {
+    ssdDigit(temp / 1000 % 10, 3);
+    ssdDigit(temp / 100 % 10, 2);
+    ssdDigit(temp / 10 % 10, 1);
+    ssdDigit(temp / 1 % 10, 0);
+}
+
+void main(void) {
+    char slot = 0;
+    kpInit();
+    lcdInit();
+    serialInit();
+    ssdInit();
+    timerInit();
+
+    for (;;) {
+        timerReset(5000);
+        ssdUpdate();
+        temp = adcRead() / 2;
+        switch (slot) {
+            case 0:
+                LeTeclado();
+                slot = 1;
+                break;
+            case 1:
+                Serial();
+                slot = 2;
+                break;
+            case 2:
+                kpDebounce();
+                slot = 3;
+                break;
+            case 3:
+                MostraDisplay();
+                slot = 0;
+                break;
+            default:
+                slot = 0;
+                break;
+
+        }
+        timerWait();
+    }
+}
